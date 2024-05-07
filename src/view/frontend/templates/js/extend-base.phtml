@@ -1,0 +1,58 @@
+<?php
+
+    /** @var Magento\Framework\Escaper $escaper */
+    /** @var Magento\Catalog\Block\Product\View $block */
+
+    $extendSdk = 'https://sdk.helloextend.com/extend-sdk-client/v1/extend-sdk-client.min.js';
+    $extendMagentoSdk = 'https://sdk.helloextend.com/extend-sdk-client-magento-addon/v1/extend-sdk-client-magento-addon.min.js';
+    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/cart-utils.js'));
+    $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/string-utils.js'));
+?>
+
+<script>
+    'use strict';
+    initExtendBase();
+
+    function initExtendBase(){
+        const jsFiles = [
+            '<?= $cartUtils ?>',
+            '<?= $stringUtils ?>'
+        ];
+
+        const sdkFiles = [
+            '<?= $extendSdk ?>',
+            '<?= $extendMagentoSdk ?>'
+        ];
+
+        jsFiles.forEach((item) => {
+            let script = document.createElement('script');
+            script.src = item;
+            script.type = 'module';
+            document.head.appendChild(script);
+        });
+
+        sdkFiles.forEach((item, index) => {
+            let script = document.createElement('script');
+            script.src = item;
+            document.head.appendChild(script);
+            if (index == 0) script.addEventListener('load', () => {
+                //load sdk config
+                const config = [{
+                    extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
+                    activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
+                    currencyCode: "<?= $block->getData('viewModel')->getCurrencyCode(); ?>",
+                }]
+
+                Extend.config({
+                    storeId: config[0].extendStoreUuid,
+                    environment: config[0].activeEnvironment,
+                    currency: config[0].currencyCode
+                })
+            });
+
+            if (index == 1) script.addEventListener('load', () => { window.dispatchEvent(new Event('extendLoaded')); });
+
+        });
+    }
+
+</script>

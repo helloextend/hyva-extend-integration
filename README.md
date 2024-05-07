@@ -1,5 +1,18 @@
-# Hyva Compatibility module for Magento Extend Integration 
 
-This module brings the functionality of the Magento Extend Integration to Hÿva theme
+# Extend_HyvaIntegration
+Hyvä Compatibility module for Extend_Integration
 
-as of 05/07/2024 Product Protection is fully supported, Shipping Protection is still in development.
+## Installation
+
+### Via packagist.com
+
+Hyvä Compatibility modules for Extend Integration can be installed using composer via packagist.com:
+
+1. Install via composer
+    ```
+    composer require helloextend/hyva-magento-integration
+    ```
+2. Enable module
+    ```
+    bin/magento setup:upgrade
+    ```

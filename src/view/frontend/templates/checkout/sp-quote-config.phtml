@@ -1,0 +1,22 @@
+<?php
+    /*
+     * Copyright Extend (c) 2023. All rights reserved.
+     * See Extend-COPYING.txt for license details.
+     */
+
+    /** @var Magento\Framework\View\Element\Template $block */
+
+    $currencyCode = $block->getData('viewModel')->getCurrencyCode();
+    $isCurrencySupported = $block->getData('viewModel')->isCurrencySupported();
+
+?>
+
+<script>
+    console.log('HYVA sp-quote-config.phtml')
+    window.ExtendConfig = {
+        environment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
+        storeId: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
+        currencyCode: "<?= $currencyCode ?>",
+        isCurrencySupported: <?= json_encode($isCurrencySupported) ?>
+    }
+</script>

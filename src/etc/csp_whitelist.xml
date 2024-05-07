@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright Extend (c) 2022. All rights reserved.
+  ~ See Extend-COPYING.txt for license details.
+  -->
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="extend-sdks" type="host">https://sdk.helloextend.com/</value>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <value id="gstatic" type="host">*.gstatic.com</value>
+            <value id="googleapis" type="host">*.googleapis.com</value>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="helloextend-apis" type="host">https://*.helloextend.com/</value>
+                <value id="extend-apis" type="host">https://*.extend.com/</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="extend-platformsandbox-images" type="host">shipping-offers-static-images-bucket-platformsandbox.s3.amazonaws.com</value>
+                <value id="extend-stage-images" type="host">shipping-offers-static-images-bucket-stage.s3.amazonaws.com</value>
+                <value id="extend-prod-images" type="host">shipping-offers-static-images-bucket-prod.s3.amazonaws.com</value>
+                <value id="extend-dev-images" type="host">shipping-offers-static-images-bucket-dev.s3.amazonaws.com</value>
+                <value id="extend-demo-images" type="host">shipping-offers-static-images-bucket-demo.s3.amazonaws.com</value>
+                <value id="extend-static-assets" type="host">helloextend-static-assets.s3.amazonaws.com</value>
+                <value id="extend-static-assets-s3" type="host">s3.amazonaws.com</value>
+                <value id="fallback-image" type="host">https://s3.amazonaws.com/ccspersistenceprod-contentstaticassets04b201d4-1apqb8dyegznm/offers/learnMoreModal-default-1654273334107-learnMoreModal.backgroundImageUrl_Generic_WomanwithBox2.jpg</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

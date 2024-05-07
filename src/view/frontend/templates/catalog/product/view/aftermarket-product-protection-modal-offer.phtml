@@ -1,0 +1,117 @@
+<?php
+    /** @var Magento\Framework\Escaper $escaper */
+    /** @var Magento\Catalog\Block\Product\View $block */
+
+    $viewModel = $block->getData('viewModel');
+    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/cart-utils.js'));
+
+    function guidv4($data = null) {
+        // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
+        $data = $data ?? random_bytes(16);
+        assert(strlen($data) == 16);
+
+        // Set version to 0100
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+        // Set bits 6-7 to 10
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+
+        // Output the 36 character UUID.
+        return vsprintf('%s%s_%s_%s_%s_%s%s%s', str_split(bin2hex($data), 4));
+    }
+?>
+
+<?php
+    $rndSeed = guidv4();
+    $extendStoreUuid = $viewModel->getExtendStoreUuid();
+    $activeEnvironment = $viewModel->getActiveEnvironment();
+    $leadToken = $escaper->escapeHtml($escaper->escapeJs($viewModel->getLeadTokenFromUrl()));
+    $currencyCode = $viewModel->getCurrencyCode();
+    $viewModel = $block->getData('viewModel');
+    $shouldRender = $viewModel->isExtendProductProtectionEnabled() && $viewModel->isProductProtectionPostPurchaseLeadModalOfferEnabled() && $leadToken;
+?>
+
+<?php if ($shouldRender) : ?>
+
+    <div class="after_market_modal"
+         id="after_market_modal_<?= $rndSeed ?>"
+         x-data="open_modal_<?= $rndSeed ?>"
+         x-init="initAfterMarketModal();" >
+    </div>
+
+    <script type="module">
+        import cart_utils from '<?= $cartUtils ?>'
+
+        window.addEventListener(
+            'private-content-loaded', (event) => {
+                const customerData = event.detail.data;
+                const cartUtils = cart_utils(customerData);
+                window.cartUtils = cartUtils;
+            });
+
+        window.open_modal_<?=$rndSeed ?> = function() {
+            return {
+                initAfterMarketModal() {
+                    const config = [{
+                        extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
+                        activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
+                        leadToken: "<?= $leadToken ?>",
+                        currencyCode: "<?= $currencyCode ?>"
+                    }]
+
+                    window.addEventListener(
+                        'load', () => {
+                            this.leadTokenOffer(config);
+                        });
+                },
+
+                leadTokenOffer(config) {
+                    'use strict';
+
+                    return function () {
+                        const leadToken = config[0].leadToken;
+                        const storeId = config[0].extendStoreUuid;
+
+                        Extend.config({
+                            storeId,
+                            environment: config[0].activeEnvironment,
+                            currency: config[0].currencyCode,
+                        })
+
+                        if (leadToken) {
+                            Extend.aftermarketModal.open({
+                                leadToken,
+                                storeId,
+                                onClose: function (plan, product, quantity) {
+                                    if (plan && product) {
+                                        const {planId, price, term, title, coverageType, offerId} = plan
+                                        const {id: productId, price: listPrice} = product
+
+                                        const planToUpsert = {
+                                            planId,
+                                            price,
+                                            term,
+                                            title,
+                                            coverageType,
+                                            token: leadToken,
+                                        }
+                                        const cartItems =
+                                            cartUtils.getCartItems()?.map(cartUtils.mapToExtendCartItem) || []
+
+                                        ExtendMagento.upsertProductProtection({
+                                            plan: planToUpsert,
+                                            cartItems,
+                                            productId,
+                                            listPrice,
+                                            offerId,
+                                            quantity,
+                                        }).then(cartUtils.refreshMiniCart)
+                                    }
+                                },
+                            })
+                        }
+                    }.bind(window.Extend, window.ExtendMagento)();
+                }
+            }
+        }
+    </script>
+<?php endif; ?>

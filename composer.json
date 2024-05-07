@@ -1,0 +1,24 @@
+{
+    "name": "helloextend/hyva-extend-integration",
+    "description": "Hyvä Themes Compatibility module for Extend_Integration",
+    "type": "magento2-module",
+    "require": {
+        "magento/framework": "*",
+        "hyva-themes/magento2-compat-module-fallback": "*",
+        "helloextend/integration": "*"
+    },
+    "authors": [{
+        "name": "Extend",
+        "email": "magento@extend.com"
+    }],
+    "license": "see LICENSE.md",
+    "autoload": {
+        "files": [
+            "src/registration.php"
+        ],
+        "psr-4": {
+            "Extend\\HyvaIntegration\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}

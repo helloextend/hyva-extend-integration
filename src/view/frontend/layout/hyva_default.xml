@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Hyva Extend Warranty
+ *
+ * @author      Extend Magento Team <magento@guidance.com>
+ * @category    Extend
+ * @package     Hyva_ExtendWarranty
+ * @copyright   Copyright (c) 2022 Extend Inc. (https://www.extend.com/)
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd" label="Extend Warranty Installation">
+    <body>
+        <referenceContainer name="head.additional">
+            <block name="extend-base.js"
+                   template="Extend_HyvaIntegration::js/extend-base.phtml"
+                   ifconfig="extend/integration/enable"
+                   after="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\Integration\ViewModel\EnvironmentAndExtendStoreUuid</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>
