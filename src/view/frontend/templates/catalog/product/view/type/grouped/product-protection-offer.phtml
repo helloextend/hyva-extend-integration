@@ -1,53 +1,181 @@
 <?php
-/*
- * Copyright Extend (c) 2023. All rights reserved.
- * See Extend-COPYING.txt for license details.
- */
+    /*
+     * Copyright Extend (c) 2024. All rights reserved.
+     */
 
-/** @var $block Magento\GroupedProduct\Block\Product\View\Type\Grouped */
+    /** @var Magento\Framework\Escaper $escaper */
+    /** @var  Magento\GroupedProduct\Block\Product\View\Type\Grouped $block */
 
-$categoryName = '';
+    $viewModel = $block->getData('viewModel');
+    $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
+    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
+    $categoryName = '';
 
-if ($category = $block->getProduct()->getCategory()) {
-  $categoryName = $category->getName();
-}
-
-$viewModel = $block->getData('viewModel');
-
-$shouldRender = $viewModel->isExtendProductProtectionEnabled() && $viewModel->isProductProtectionProductCatalogPageModalOfferEnabled();
-?>
-
-<?php if ($shouldRender) : ?>
-  <table id="product_protection_offers">
-    <?php foreach ($block->getAssociatedProducts() as $product) : ?>
-      <tr>
-        <td class="product-protection-offer product-id-<?= $product->getEntityId(); ?>" id="product_protection_offer_<?= preg_replace('/[^a-zA-Z0-9-_|]/', '',  $product->getSku()); ?>" colspan="3" style="border-top: 0 !important"></td>
-      </tr>
-    <?php endforeach; ?>
-  </table>
-  <script type="text/x-magento-init">
-    {
-        "#product_protection_offers": {
-            "productProtectionOffer": [
-                <?php foreach ($block->getAssociatedProducts() as $key => $product) : ?>
-                    {
-                        "extendStoreUuid": "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
-                        "activeEnvironment": "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
-                        "selectedProductSku": "<?= $product->getSku(); ?>",
-                        "selectedProductPrice": "<?= $product->getPrice(); ?>",
-                        "productCategory": "<?= $categoryName; ?>"
-                    }<?= array_key_last($block->getAssociatedProducts()) === $key ? '' : ',' ?>
-                <?php endforeach; ?>
-            ]
-        }
+    if ($category = $block->getProduct()->getCategory()) {
+      $categoryName = $category->getName();
     }
-  </script>
-  <script>
-    document.querySelectorAll('#super-product-table tbody tr .price-box').forEach((el, i) => {
-      let id = el.getAttribute('data-price-box');
-      if (document.querySelector('.' + id)) {
-        el.closest('tr').after(document.querySelector('.' + id).closest('tr'));
-      }
-    });
-  </script>
+
+    $viewModel = $block->getData('viewModel');
+    $currencyCode = $viewModel->getCurrencyCode();
+    $isCurrencySupported = $viewModel->isCurrencySupported();
+    $shouldRender = $viewModel->isExtendProductProtectionEnabled()
+                    && $viewModel->isProductProtectionProductDisplayPageOfferEnabled()
+                    && $isCurrencySupported;
+
+
+
+    if ($shouldRender) : ?>
+        <script>
+            window.extendGrouped = {};
+        </script>
+
+        <div id="product_protection_offers">
+            <?php foreach ($block->getAssociatedProducts() as $product) : ?>
+                  <div>
+                        <div class="product-protection-offer product-id-<?= $product->getEntityId(); ?>"
+                            id="product_protection_offer_<?= preg_replace('/[^a-zA-Z0-9-_|]/', '',  $product->getSku()); ?>"
+                            colspan="3" style="border-top: 0 !important">
+                        </div>
+                  </div>
+                 <script>
+                    // build the div for the offer and append to the super_group
+
+                    entityId=<?= $product->getEntityId(); ?>;
+                    window.extendGrouped[entityId] = document.createElement('div');
+                    currentProduct = window.extendGrouped[entityId];
+                    currentProduct.id = "product_protection_offer_<?= preg_replace('/[^a-zA-Z0-9_|]/', '',  $product->getSku()); ?>";
+                    currentProduct.className ="product-protection-offer product-id-<?= $product->getEntityId(); ?>";
+                    currentProduct.dataset.productId = entityId;
+                    currentProduct.dataset.productSku = '<?= $product->getSku(); ?>';
+                    currentProduct.dataset.productPrice = '<?= $product->getPrice(); ?>';
+                    document.querySelector(`[for="super_group[${entityId}]"]`).append(currentProduct);
+                </script>
+            <?php endforeach; ?>
+        </div>
+
+        <script type="module">
+            import stringUtils from '<?= $stringUtils ?>'
+            import cart_utils from '<?= $cartUtils ?>'
+
+            window.addEventListener(
+                'private-content-loaded', (event) => {
+                    const customerData = event.detail.data;
+                    const cartUtils = cart_utils(customerData);
+                    window.cartUtils = cartUtils;
+
+                    for (let index in window.extendGrouped ){
+                        window.product_protection_offer(window.extendGrouped[index]).initProductWarrantyOffers();
+                    }
+                });
+
+            window.product_protection_offer = function(productOffer)  {
+                return {
+                    initProductWarrantyOffers() {
+                        const config = [{
+                            extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
+                            activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
+                            selectedProductSku: productOffer.dataset.productSku,
+                            selectedProductPrice: productOffer.dataset.productPrice,
+                            productCategory: "<?= $categoryName; ?>",
+                            currencyCode: "<?= $currencyCode ?>",
+                            selectedConfigurableProduct: {}
+                        }];
+
+                        this.productProtectionOffer(config);
+                    },
+
+                    productProtectionOffer(config) {
+                        'use strict';
+
+                        const getProductQuantity = function () {
+                            let quantity = 1
+                            const quantityInput = document.querySelector('.input-text.qty')
+                            if (quantityInput) quantity = parseInt(quantityInput.value)
+                            return quantity
+                        }
+
+                        return function() {
+
+                            Extend.config({
+                                storeId: config[0].extendStoreUuid,
+                                environment: config[0].activeEnvironment,
+                                currency: config[0].currencyCode,
+                            })
+
+                            for (let key in config) {
+                                Extend.buttons.render(
+                                    '#product_protection_offer_' +
+                                    stringUtils.sanitizeForElementId(config[key].selectedProductSku),
+                                    {
+                                        referenceId: config[key].selectedProductSku,
+                                        price: config[key].selectedProductPrice * 100,
+                                    },
+                                )
+                            }
+
+                            // Listen for the add to cart button to be clicked.
+                            // Show modal offer on qualifying simple products if no offer was chosen by the customer.
+                            document
+                                .getElementById('product-addtocart-button')
+                                .addEventListener('click', function (event) {
+                                    const buttonInstance = Extend.buttons.instance(
+                                        '#product_protection_offer_' +
+                                        stringUtils.sanitizeForElementId(config[0].selectedProductSku),
+                                    )
+
+                                    if (buttonInstance) {
+                                        if (config.length === 1) {
+                                            let selectedProduct
+
+                                            if (
+                                                buttonInstance.getActiveProduct().id ===
+                                                config[0].selectedProductSku
+                                            ) {
+                                                selectedProduct = config[0];
+                                            } else {
+                                                selectedProduct = config[0].selectedConfigurableProduct;
+                                            }
+
+                                            const cartItems = cartUtils
+                                                .getCartItems()
+                                                .map(cartUtils.mapToExtendCartItem)
+                                            const quantity = getProductQuantity()
+
+                                            const selectedPlan = buttonInstance.getPlanSelection()
+
+                                            // If a plan is selected, add it to the cart
+                                            if (selectedPlan) {
+                                                const {planId, price, term, title, coverageType, offerId} =
+                                                    selectedPlan
+                                                const {
+                                                    selectedProductSku: productId,
+                                                    selectedPrice: listPrice,
+                                                } = selectedProduct
+
+                                                const planToUpsert = {
+                                                    planId,
+                                                    price,
+                                                    term,
+                                                    title,
+                                                    coverageType,
+                                                }
+
+                                                ExtendMagento.upsertProductProtection({
+                                                    plan: planToUpsert,
+                                                    cartItems,
+                                                    productId,
+                                                    listPrice,
+                                                    offerId,
+                                                    quantity,
+                                                }).then(cartUtils.refreshMiniCart)
+                                                // If no plan is selected, open the offer modal
+                                            }
+                                        }
+                                    }
+                                })
+                        }.bind(window.Extend, window.ExtendMagento)();
+                    }
+                }
+            }
+        </script>
 <?php endif; ?>

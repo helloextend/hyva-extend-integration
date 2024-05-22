@@ -3,7 +3,7 @@
     /** @var Magento\Catalog\Block\Product\View $block */
 
     $viewModel = $block->getData('viewModel');
-    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/cart-utils.js'));
+    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
 
     function guidv4($data = null) {
         // Generate 16 bytes (128 bits) of random data or use the data passed into the function.

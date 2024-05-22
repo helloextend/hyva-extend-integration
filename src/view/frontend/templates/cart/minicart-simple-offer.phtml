@@ -7,8 +7,8 @@
     /** @var Magento\Framework\Escaper $escaper */
     /** @var Magento\Catalog\Block\Product\View $block */
 
-    $stringUtils        = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/string-utils.js'));
-    $cartUtils          = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/cart-utils.js'));
+    $stringUtils        = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
+    $cartUtils          = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
     $viewModel          = $block->getData('viewModel');
     $extendStoreUuid    = $viewModel->getExtendStoreUuid();
     $activeEnvironment  = $viewModel->getActiveEnvironment();

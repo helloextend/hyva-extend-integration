@@ -1,14 +1,14 @@
 <?php
-/*
- * Copyright Extend (c) 2023. All rights reserved.
- * See Extend-COPYING.txt for license details.
- */
+    /*
+     * Copyright Extend (c) 2024. All rights reserved.
+     */
+
     /** @var Magento\Framework\Escaper $escaper */
     /** @var Magento\Catalog\Block\Product\View $block */
 
     $viewModel = $block->getData('viewModel');
-    $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/string-utils.js'));
-    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/cart-utils.js'));
+    $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
+    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
 ?>
 
 <?php
