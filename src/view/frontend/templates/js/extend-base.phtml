@@ -5,8 +5,8 @@
 
     $extendSdk = 'https://sdk.helloextend.com/extend-sdk-client/v1/extend-sdk-client.min.js';
     $extendMagentoSdk = 'https://sdk.helloextend.com/extend-sdk-client-magento-addon/v1/extend-sdk-client-magento-addon.min.js';
-    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/cart-utils.js'));
-    $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration/js/utils/string-utils.js'));
+    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
+    $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
 ?>
 
 <script>
@@ -34,7 +34,7 @@
         sdkFiles.forEach((item, index) => {
             let script = document.createElement('script');
             script.src = item;
-            document.head.appendChild(script);
+
             if (index == 0) script.addEventListener('load', () => {
                 //load sdk config
                 const config = [{
@@ -51,7 +51,7 @@
             });
 
             if (index == 1) script.addEventListener('load', () => { window.dispatchEvent(new Event('extendLoaded')); });
-
+            document.head.appendChild(script);
         });
     }
 

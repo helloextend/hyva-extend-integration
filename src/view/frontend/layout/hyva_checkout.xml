@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright Extend (c) 2022. All rights reserved.
+  ~ See Extend-COPYING.txt for license details.
+  <item name="config" xsi:type="array">
+                                                                    <item name="template" xsi:type="string">Extend_HyvaIntegration/checkout/summary/shipping-protection-offer</item>
+                                                                </item>
+
+
+                                                                <item name="component" xsi:type="string">Extend_HyvaIntegration/checkout/summary/shipping-protection-offer</item>
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+<!--        <referenceContainer name="content">-->
+<!--            <block name="extend-environment-store-uuid" template="Extend_HyvaIntegration::checkout/sp-quote-config.phtml">-->
+<!--                <arguments>-->
+<!--                    <argument name="viewModel" xsi:type="object">Extend\Integration\ViewModel\EnvironmentAndExtendStoreUuid</argument>-->
+<!--                </arguments>-->
+<!--            </block>-->
+<!--        </referenceContainer>-->
+        <referenceBlock name="checkout.shipping.methods.after">
+            <block name="shipping-additional" template="Extend_HyvaIntegration::checkout/summary/shipping-protection-offer.phtml" after="-">
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\HyvaIntegration\ViewModel\ShippingProtection</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+
+
+        <referenceBlock name="price-summary.total-segments">
+            <block name="price-summary.total-segment.shipping_protection"
+                   as="shipping_protection"
+                   template="Extend_HyvaIntegration::checkout/summary/shipping-protection.phtml"
+                   after="price-summary.total-segment.subtotal"
+                  >
+                <arguments>
+                    <argument name="viewModel" xsi:type="object">Extend\HyvaIntegration\ViewModel\ShippingProtection</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+
+<!--        <move element="price-summary.total-segment.shipping_protection" destination="price-summary.total-segments" before="price-summary.total-segment.shipping"/>-->
+
+
+    </body>
+</page>

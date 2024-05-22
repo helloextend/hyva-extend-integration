@@ -2,6 +2,12 @@
 <!--
   ~ Copyright Extend (c) 2022. All rights reserved.
   ~ See Extend-COPYING.txt for license details.
+  <item name="config" xsi:type="array">
+                                                                    <item name="template" xsi:type="string">Extend_HyvaIntegration/checkout/summary/shipping-protection-offer</item>
+                                                                </item>
+
+
+                                                                <item name="component" xsi:type="string">Extend_HyvaIntegration/checkout/summary/shipping-protection-offer</item>
   -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
@@ -12,62 +18,29 @@
                 </arguments>
             </block>
         </referenceContainer>
-        <referenceBlock name="checkout.root">
-            <arguments>
-                <argument name="jsLayout" xsi:type="array">
-                    <item name="components" xsi:type="array">
-                        <item name="checkout" xsi:type="array">
-                            <item name="children" xsi:type="array">
-                                <item name="steps" xsi:type="array">
-                                    <item name="children" xsi:type="array">
-                                        <item name="shipping-step" xsi:type="array">
-                                            <item name="children" xsi:type="array">
-                                                <item name="shippingAddress" xsi:type="array">
-                                                    <item name="children" xsi:type="array">
-                                                        <item name="shippingAdditional" xsi:type="array">
-                                                            <item name="component" xsi:type="string">uiComponent</item>
-                                                            <item name="displayArea" xsi:type="string">shippingAdditional</item>
-                                                            <item name="children" xsi:type="array">
-                                                            <item name="additional_block" xsi:type="array">
-                                                            <item name="component" xsi:type="string">Extend_Integration/js/view/checkout/summary/shipping-protection-offer</item>
-                                                            </item>
-                                                            </item>
-                                                        </item>
-                                                    </item>
-                                                </item>
-                                            </item>
-                                        </item>
-                                    </item>
-                                </item>
-                                <item name="sidebar" xsi:type="array">
-                                    <item name="children" xsi:type="array">
-                                        <item name="summary" xsi:type="array">
-                                            <item name="children" xsi:type="array">
-                                                <item name="totals" xsi:type="array">
-                                                    <item name="children" xsi:type="array">
-                                                        <!--  Start of the main content that needs to be added-->
-                                                        <item name="shipping_protection" xsi:type="array">
-                                                            <!-- The path to our js file-->
-                                                            <item name="component" xsi:type="string">Extend_Integration/js/view/checkout/summary/shipping-protection</item>
-                                                            <item name="sortOrder" xsi:type="string">24</item>
-                                                            <item name="config" xsi:type="array">
-                                                            <item name="template" xsi:type="string">Extend_Integration/checkout/summary/shipping-protection</item>
-                                                            <!--  Show custom shipping protection on order summary-->
-                                                            <item name="title" xsi:type="string" translate="true">Shipping Protection</item>
-                                                            </item>
-                                                        </item>
-                                                    </item>
-                                                </item>
-                                                <!--  End-->
-                                            </item>
-                                        </item>
-                                    </item>
-                                </item>
-                            </item>
-                        </item>
-                    </item>
-                </argument>
-            </arguments>
-        </referenceBlock>
+<!--        <referenceBlock name="checkout.shipping.methods.after">-->
+<!--            <block name="shipping-additional" template="Extend_HyvaIntegration::checkout/summary/shipping-protection-offer.phtml" after="-">-->
+<!--                <arguments>-->
+<!--                    <argument name="viewModel" xsi:type="object">Extend\HyvaIntegration\ViewModel\ShippingProtection</argument>-->
+<!--                </arguments>-->
+<!--            </block>-->
+<!--        </referenceBlock>-->
+
+
+<!--        <referenceBlock name="price-summary.total-segments">-->
+<!--            <block name="price-summary.total-segment.shipping_protection"-->
+<!--                   as="shipping_protection"-->
+<!--                   template="Extend_HyvaIntegration::checkout/summary/shipping-protection.phtml"-->
+<!--                   after="price-summary.total-segment.subtotal"-->
+<!--                  >-->
+<!--                <arguments>-->
+<!--                    <argument name="viewModel" xsi:type="object">Extend\HyvaIntegration\ViewModel\ShippingProtection</argument>-->
+<!--                </arguments>-->
+<!--            </block>-->
+<!--        </referenceBlock>-->
+<!--        -->
+<!--        <move element="price-summary.total-segment.shipping_protection" destination="price-summary.total-segments" before="price-summary.total-segment.shipping"/>-->
+
+
     </body>
 </page>
