@@ -195,6 +195,9 @@
                       document
                           .getElementById('product-addtocart-button')
                           .addEventListener('click', function (event) {
+                              event.preventDefault()
+                              event.stopPropagation()
+
                               const buttonInstance = Extend.buttons.instance(
                                   '#product_protection_offer_' +
                                   stringUtils.sanitizeForElementId(config[0].selectedProductSku),
@@ -216,8 +219,8 @@
                                       const cartItems = cartUtils
                                           .getCartItems()
                                           .map(cartUtils.mapToExtendCartItem)
-                                      const quantity = getProductQuantity()
 
+                                      const quantity = getProductQuantity()
                                       const selectedPlan = buttonInstance.getPlanSelection()
 
                                       // If a plan is selected, add it to the cart
@@ -234,21 +237,23 @@
                                               price,
                                               term,
                                               title,
-                                              coverageType,
+                                              coverageType
                                           }
 
-                                          ExtendMagento.upsertProductProtection({
-                                              plan: planToUpsert,
-                                              cartItems,
-                                              productId,
-                                              listPrice,
-                                              offerId,
-                                              quantity,
-                                          }).then(cartUtils.refreshMiniCart)
+                                            ExtendMagento.upsertProductProtection({
+                                                  plan: planToUpsert,
+                                                  cartItems,
+                                                  productId,
+                                                  listPrice,
+                                                  offerId,
+                                                  quantity
+                                            }).then(
+                                                  () => {
+                                                            document.querySelector('#product_addtocart_form').submit();
+                                                        }
+                                                    )
                                           // If no plan is selected, open the offer modal
                                       } else {
-                                          event.preventDefault()
-                                          event.stopPropagation()
                                           Extend.modal.open({
                                               referenceId: selectedProduct.selectedProductSku,
                                               price: selectedProduct.selectedProductPrice * 100,
@@ -278,10 +283,15 @@
                                                           productId,
                                                           listPrice,
                                                           offerId,
-                                                          quantity,
-                                                      }).then(cartUtils.refreshMiniCart)
+                                                          quantity
+                                                      }).then(
+                                                          function(){
+                                                              document.querySelector('#product_addtocart_form').submit();
+                                                          }
+                                                      )
+                                                  }else{
+                                                      document.querySelector('#product_addtocart_form').submit();
                                                   }
-                                                  document.querySelector('#product_addtocart_form').submit()
                                               },
                                           })
                                       }

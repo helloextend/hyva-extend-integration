@@ -38,7 +38,6 @@
 
 <?php if ($shouldRender) : ?>
   <div>
-<!-- x-init="initProductWarrantyOffers();" -->
       <div class="product-protection-offer"
            id="product_protection_offer_<?= $sanitizedProductSku ?>"
            x-data="product_protection_offer_<?= $sanitizedProductSku ?>"
@@ -46,132 +45,137 @@
       </div>
   </div>
 
-    <script type="module">
-        import stringUtils from '<?= $stringUtils ?>'
-        import cart_utils from '<?= $cartUtils ?>'
+    <script>
+        (async() => {
+            let cart_utils = await import('<?= $cartUtils ?>');
+            cart_utils = cart_utils.default;
 
-        window.product_protection_offer_<?= $sanitizedProductSku ?> = function()  {
-            return {
-                customerData: {},
+            let stringUtils = await import('<?= $stringUtils ?>');
+            stringUtils = stringUtils.default;
 
-                initProductWarrantyOffers(event) {
+            window.product_protection_offer_<?= $sanitizedProductSku ?> = function()  {
+                return {
+                    customerData: {},
 
-                    const config = [{
-                        extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
-                        activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
-                        selectedProductSku: "<?= $productSku; ?>",
-                        selectedProductPrice: "<?= $product->getPrice(); ?>",
-                        productCategory: "<?= $categoryName; ?>",
-                        currencyCode: "<?= $currencyCode ?>",
-                        selectedConfigurableProduct: {}
-                    }]
+                    initProductWarrantyOffers(event) {
 
-                    this.customerData = event.detail.data;
-                    const cartUtils = cart_utils(this.customerData);
+                        const config = [{
+                            extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
+                            activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
+                            selectedProductSku: "<?= $productSku; ?>",
+                            selectedProductPrice: "<?= $product->getPrice(); ?>",
+                            productCategory: "<?= $categoryName; ?>",
+                            currencyCode: "<?= $currencyCode ?>",
+                            selectedConfigurableProduct: {}
+                        }]
+
+                        this.customerData = event.detail.data;
+                        const cartUtils = cart_utils(this.customerData);
 
 
-                    if (window.Extend && window.ExtendMagento){
-                        this.productProtectionOffer(config, cartUtils)
+                        if (window.Extend && window.ExtendMagento){
+                            this.productProtectionOffer(config, cartUtils)
 
-                    }
-                    window.addEventListener(
-                        'load', () => {
-                                this.productProtectionOffer(config, cartUtils)
-                        });
-                },
+                        }
+                        window.addEventListener(
+                            'load', () => {
+                                    this.productProtectionOffer(config, cartUtils)
+                            });
+                    },
 
-                productProtectionOffer(config, cartUtils) {
-                    'use strict';
+                    productProtectionOffer(config, cartUtils) {
+                        'use strict';
 
-                    function getProductQuantity(cartItems, product) {
-                        let quantity = 1
+                        function getProductQuantity(cartItems, product) {
+                            let quantity = 1
 
-                        for (let i = 0; i < cartItems.length; i++) {
-                            const cartItem = cartItems[i];
-                            if (cartItem.sku === product.id) {
-                                quantity = cartItem.qty;
-                                break; // Exit the loop once a matching item is found
+                            for (let i = 0; i < cartItems.length; i++) {
+                                const cartItem = cartItems[i];
+                                if (cartItem.sku === product.id) {
+                                    quantity = cartItem.qty;
+                                    break; // Exit the loop once a matching item is found
+                                }
+                            }
+                            return quantity
+                        }
+
+
+                        function handleAddToCartClick(opts) {
+                            const { plan, product, quantity } = opts
+
+                            if (plan && product) {
+                                const { planId, price, term, title, coverageType, offerId } = plan
+                                const { id: productId, price: listPrice } = product
+
+                                const planToUpsert = {
+                                    planId,
+                                    price,
+                                    term,
+                                    title,
+                                    coverageType,
+                                }
+                                const cartItems = cartUtils
+                                    .getCartItems()
+                                    .map(cartUtils.mapToExtendCartItem)
+
+                                ExtendMagento.upsertProductProtection({
+                                    plan: planToUpsert,
+                                    cartItems,
+                                    productId,
+                                    listPrice,
+                                    offerId,
+                                    quantity: quantity ?? getProductQuantity(cartItems, product),
+                                }).then(function () {
+                                    cartUtils.refreshMiniCart()
+                                    window.location.reload()
+                                })
                             }
                         }
-                        return quantity
-                    }
 
-
-                    function handleAddToCartClick(opts) {
-                        const { plan, product, quantity } = opts
-
-                        if (plan && product) {
-                            const { planId, price, term, title, coverageType, offerId } = plan
-                            const { id: productId, price: listPrice } = product
-
-                            const planToUpsert = {
-                                planId,
-                                price,
-                                term,
-                                title,
-                                coverageType,
-                            }
-                            const cartItems = cartUtils
-                                .getCartItems()
-                                .map(cartUtils.mapToExtendCartItem)
-
-                            ExtendMagento.upsertProductProtection({
-                                plan: planToUpsert,
-                                cartItems,
-                                productId,
-                                listPrice,
-                                offerId,
-                                quantity: quantity ?? getProductQuantity(cartItems, product),
-                            }).then(function () {
-                                cartUtils.refreshMiniCart()
-                                window.location.reload()
+                        function renderSimpleOffer(cartItems, config) {
+                            const sku = config[0].selectedProductSku
+                            const isWarrantyInCart = ExtendMagento.warrantyInCart({
+                                lineItemSku: sku,
+                                lineItems: cartItems,
                             })
-                        }
-                    }
 
-                    function renderSimpleOffer(cartItems, config) {
-                        const sku = config[0].selectedProductSku
-                        const isWarrantyInCart = ExtendMagento.warrantyInCart({
-                            lineItemSku: sku,
-                            lineItems: cartItems,
-                        })
+                            if (
+                                sku === 'extend-protection-plan' ||
+                                sku === 'xtd-pp-pln' ||
+                                isWarrantyInCart
+                            ) {
+                                return
+                            }
 
-                        if (
-                            sku === 'extend-protection-plan' ||
-                            sku === 'xtd-pp-pln' ||
-                            isWarrantyInCart
-                        ) {
-                            return
-                        }
+                            const activeProductData = {
+                                referenceId: config[0].selectedProductSku,
+                                price: config[0].selectedProductPrice * 100,
+                                onAddToCart: handleAddToCartClick,
+                            }
 
-                        const activeProductData = {
-                            referenceId: config[0].selectedProductSku,
-                            price: config[0].selectedProductPrice * 100,
-                            onAddToCart: handleAddToCartClick,
+                            Extend.buttons.renderSimpleOffer(
+                                '#product_protection_offer_' +
+                                stringUtils.sanitizeForElementId(config[0].selectedProductSku),
+                                activeProductData,
+                            )
                         }
 
-                        Extend.buttons.renderSimpleOffer(
-                            '#product_protection_offer_' +
-                            stringUtils.sanitizeForElementId(config[0].selectedProductSku),
-                            activeProductData,
-                        )
-                    }
+                        return function() {
+                            const cartData  = cartUtils.getCartData()
 
-                    return function() {
-                        const cartData  = cartUtils.getCartData()
+                            let cartItems = cartUtils.getCartItems()
 
-                        let cartItems = cartUtils.getCartItems()
+                            if (cartItems.length > 0) {
+                                renderSimpleOffer(cartItems, config)
+                            }
 
-                        if (cartItems.length > 0) {
+                            cartItems = cartData.items
                             renderSimpleOffer(cartItems, config)
-                        }
-
-                        cartItems = cartData.items
-                        renderSimpleOffer(cartItems, config)
-                    }.bind(window.Extend, window.ExtendMagento)();
+                        }.bind(window.Extend, window.ExtendMagento)();
+                    }
                 }
             }
-        }
+        })(); //async
     </script>
 
 <?php endif; ?>

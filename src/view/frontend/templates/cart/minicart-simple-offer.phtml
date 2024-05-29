@@ -25,133 +25,136 @@
     >
     </div>
 
-    <script type="module">
-        'use strict'
+    <script>
 
-        import cart_utils from '<?= $cartUtils ?>'
+        (async() => {
 
-        const minicartSelector = '[data-block="minicart"]'
-        const productItemSelector = '.items-start'
-        const itemDetailsSelector = '.price-excluding-tax'
-        const simpleOfferClass = 'extend-minicart-simple-offer'
+            let cart_utils = await import('<?= $cartUtils ?>');
+            cart_utils = cart_utils.default;
+
+            const minicartSelector = '[data-block="minicart"]'
+            const productItemSelector = '.items-start'
+            const itemDetailsSelector = '.price-excluding-tax'
+            const simpleOfferClass = 'extend-minicart-simple-offer'
 
 
-        window.minicartSimpleOffer = function() {
-            return {
-                customerData: {},
+            window.minicartSimpleOffer = function() {
+                return {
+                    customerData: {},
 
-                initMinicartSimpleOffer(event ) {
+                    initMinicartSimpleOffer(event ) {
 
-                    const minicartConfig = [{
-                        extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
-                        activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
-                        currencyCode: "<?= $currencyCode ?>",
-                    }]
-                },
+                        const minicartConfig = [{
+                            extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
+                            activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
+                            currencyCode: "<?= $currencyCode ?>",
+                        }]
+                    },
 
-                minicartOffer(event, toggle) {
+                    minicartOffer(event, toggle) {
 
-                    'use strict';
+                        'use strict';
 
-                    if (!toggle && event.detail.data){
-                        this.customerData = event.detail.data;
-                    }
+                        if (!toggle && event.detail.data){
+                            this.customerData = event.detail.data;
+                        }
 
-                    if (!(window.Extend || window.ExtendMagento)) return;
+                        if (!(window.Extend || window.ExtendMagento)) return;
 
-                    if (toggle && event.detail && !event.detail.isOpen  ) return;
+                        if (toggle && event.detail && !event.detail.isOpen  ) return;
 
-                    const cartUtils = cart_utils(this.customerData);
+                        const cartUtils = cart_utils(this.customerData);
 
-                    function handleUpdate() {
-                        let cartItems = cartUtils.getCartItems();
-                        for(let item in cartItems ) {
-                            const cartItem = cartItems[item];
-                            const itemContainerElem = document.querySelectorAll(productItemSelector)[item]
-                            const isWarrantyInCart = ExtendMagento.warrantyInCart({
-                                lineItemSku: cartItem.product_sku,
-                                lineItems: cartItems,
-                            })
-                            const simpleOfferElemId = `extend-minicart-simple-offer-${cartItem.item_id}`
-                            const  existingSimpleOfferElem = itemContainerElem ? itemContainerElem.querySelector('.extend-minicart-simple-offer')  :false;
-
-                            if (existingSimpleOfferElem){
-                                existingSimpleOfferElem.remove()
-                            }
-                            if (cartItem.product_sku === 'extend-protection-plan'
-                                    || cartItem.product_sku === 'xtd-pp-pln'
-                                    || isWarrantyInCart ){
-                                continue;
-                            }
-
-                            let simpleOfferElem = document.createElement('div')
-
-                            simpleOfferElem.setAttribute('id', simpleOfferElemId)
-                            simpleOfferElem.setAttribute('class', simpleOfferClass)
-
-                            const itemDetailsElem = itemContainerElem.querySelector(itemDetailsSelector)
-
-                            if (itemDetailsElem) {
-                                itemDetailsElem.append(simpleOfferElem)
-                                Extend.buttons.renderSimpleOffer(simpleOfferElem, {
-                                    referenceId: cartItem.product_sku,
-                                    price: cartItem.product_price_value * 100,
-                                    onAddToCart: function (opts) {
-                                        addToCart(opts);
-                                    },
+                        function handleUpdate() {
+                            let cartItems = cartUtils.getCartItems();
+                            for(let item in cartItems ) {
+                                const cartItem = cartItems[item];
+                                const itemContainerElem = document.querySelectorAll(productItemSelector)[item]
+                                const isWarrantyInCart = ExtendMagento.warrantyInCart({
+                                    lineItemSku: cartItem.product_sku,
+                                    lineItems: cartItems,
                                 })
+                                const simpleOfferElemId = `extend-minicart-simple-offer-${cartItem.item_id}`
+                                const  existingSimpleOfferElem = itemContainerElem ? itemContainerElem.querySelector('.extend-minicart-simple-offer')  :false;
+
+                                if (existingSimpleOfferElem){
+                                    existingSimpleOfferElem.remove()
+                                }
+                                if (cartItem.product_sku === 'extend-protection-plan'
+                                        || cartItem.product_sku === 'xtd-pp-pln'
+                                        || isWarrantyInCart ){
+                                    continue;
+                                }
+
+                                let simpleOfferElem = document.createElement('div')
+
+                                simpleOfferElem.setAttribute('id', simpleOfferElemId)
+                                simpleOfferElem.setAttribute('class', simpleOfferClass)
+
+                                const itemDetailsElem = itemContainerElem.querySelector(itemDetailsSelector)
+
+                                if (itemDetailsElem) {
+                                    itemDetailsElem.append(simpleOfferElem)
+                                    Extend.buttons.renderSimpleOffer(simpleOfferElem, {
+                                        referenceId: cartItem.product_sku,
+                                        price: cartItem.product_price_value * 100,
+                                        onAddToCart: function (opts) {
+                                            addToCart(opts);
+                                        },
+                                    })
+                                }
                             }
                         }
-                    }
 
-                    function  getProductQuantity  (cartItems, product) {
-                        let quantity = 1
+                        function  getProductQuantity  (cartItems, product) {
+                            let quantity = 1
 
-                        const matchedCartItem = cartItems.find(
-                            cartItem => cartItem.sku === product.id,
-                        )
-                        if (matchedCartItem) quantity = matchedCartItem.qty
+                            const matchedCartItem = cartItems.find(
+                                cartItem => cartItem.sku === product.id,
+                            )
+                            if (matchedCartItem) quantity = matchedCartItem.qty
 
-                        return quantity
-                    }
+                            return quantity
+                        }
 
-                     function addToCart (opts) {
-                         const {plan, product, quantity} = opts
+                         function addToCart (opts) {
+                             const {plan, product, quantity} = opts
 
-                         if (plan && product) {
-                             const {planId, price, term, title, coverageType, offerId} = plan
-                             const {id: productId, price: listPrice} = product
+                             if (plan && product) {
+                                 const {planId, price, term, title, coverageType, offerId} = plan
+                                 const {id: productId, price: listPrice} = product
 
-                             const planToUpsert = {
-                                 planId,
-                                 price,
-                                 term,
-                                 title,
-                                 coverageType,
+                                 const planToUpsert = {
+                                     planId,
+                                     price,
+                                     term,
+                                     title,
+                                     coverageType,
+                                 }
+                                 const cartItems = cartUtils
+                                     .getCartItems()
+                                     .map(cartUtils.mapToExtendCartItem)
+
+                                 ExtendMagento.upsertProductProtection({
+                                     plan: planToUpsert,
+                                     cartItems,
+                                     productId,
+                                     listPrice,
+                                     offerId,
+                                     quantity: quantity ?? getProductQuantity(cartItems, product),
+                                 }).finally(()=> {
+                                     cartUtils.refreshMiniCart();
+                                 })
                              }
-                             const cartItems = cartUtils
-                                 .getCartItems()
-                                 .map(cartUtils.mapToExtendCartItem)
-
-                             ExtendMagento.upsertProductProtection({
-                                 plan: planToUpsert,
-                                 cartItems,
-                                 productId,
-                                 listPrice,
-                                 offerId,
-                                 quantity: quantity ?? getProductQuantity(cartItems, product),
-                             }).finally(()=> {
-                                 cartUtils.refreshMiniCart();
-                             })
                          }
-                     }
 
-                     return function (config) {
-                         setTimeout(()=>{ handleUpdate()  }, 1000)
-                     }.bind(window.Extend, window.ExtendMagento)();
+                         return function (config) {
+                             setTimeout(()=>{ handleUpdate()  }, 1000)
+                         }.bind(window.Extend, window.ExtendMagento)();
+                    }
                 }
             }
-        }
+        })(); //async
  </script>
 
 <?php endif; ?>
