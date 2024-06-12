@@ -13,7 +13,6 @@
 
     $viewModel = $block->getData('viewModel');
     $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
-    $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
     $shouldRenderSP = $viewModel->isExtendShippingProtectionEnabled();
 
 ?>
@@ -22,10 +21,8 @@
     window.checkoutConfig =  <?php echo json_encode($viewModel->getCheckoutConfig()); ?>;
 </script>
 
-<div id="extend-shipping-protection"
-    x-data="shipping_protection_offer"
-    @private-content-loaded.window="initShippingProtectionOffers(event)"
-    ></div>
+<div id="extend-shipping-protection"></div>
+
 <style>
     #extend-shipping-protection, #extend-shipping-protection iframe {
         height: 4em !important;
@@ -34,118 +31,115 @@
 
 <script type="module">
     import stringUtils from '<?= $stringUtils ?>'
-    import cart_utils from '<?= $cartUtils ?>'
-
-    window.shipping_protection_offer = function() {
-        return {
-            customerData: {},
-
-            initShippingProtectionOffers(event) {
-                let shouldRenderSPOffer = false;
-                this.customerData = event.detail.data;
-                const cartUtils = cart_utils(this.customerData);
-
-                if (
-                    window.ExtendConfig &&
-                    window.ExtendConfig.environment &&
-                    window.ExtendConfig.storeId &&
-                    window.ExtendConfig.isCurrencySupported &&
-                    window.checkoutConfig.extendEnable == '1' &&
-                    window.ExtendConfig.shouldRenderSP == '1'
-                ) {
-                    shouldRenderSPOffer = true;
-                }
-
-                if (shouldRenderSPOffer) {
-                    if (window.Extend && window.ExtendMagento){
-                          this.shippingProtectionOffer(cartUtils);
-                    }else {
-                        window.addEventListener(
-                            'load', () => {
-                                this.shippingProtectionOffer(cartUtils);
-                            });
-                    }
-                }
-            },
+    window.addEventListener(
+        'private-content-loaded', (event) => {
+            initShippingProtectionOffers(event);
+        }, { once:true });
 
 
-            shippingProtectionOffer(cartUtils) {
-                'use strict';
+    async function initShippingProtectionOffers(event) {
 
-                return function () {
-                    try {
-                        const items = ExtendMagento.formatCartItemsForSp(
-                            cartUtils.getCartItems()
-                        )
-                        const totals = cartUtils.getCartData().subtotalAmount;
+        let shouldRenderSPOffer = false;
+        const customerData = event.detail.data;
 
-                        Extend.shippingProtection.render({
-                            selector: '#extend-shipping-protection',
-                            items,
-                            isShippingProtectionInCart: ExtendMagento.isShippingProtectionInOrder(
-                                                            window.checkoutConfig.totalsData
-                                                            ),
+        if (
+            window.ExtendConfig &&
+            window.ExtendConfig.environment &&
+            window.ExtendConfig.storeId &&
+            window.ExtendConfig.isCurrencySupported &&
+            window.checkoutConfig.extendEnable == '1' &&
+            window.ExtendConfig.shouldRenderSP == '1'
+        ) {
+            shouldRenderSPOffer = true;
+        }
 
-                            onEnable: function (quote) {
-                                ExtendMagento.addSpPlanToOrder({
-                                    quote,
-                                    totals: window.checkoutConfig.totalsData,
-                                    callback: function (err, _resp) {
-                                        if (err) {
-                                            return
-                                        }
+        if (shouldRenderSPOffer) {
+            if (window.Extend && window.ExtendMagento){
+                  shippingProtectionOffer(customerData);
+            }else {
+                window.addEventListener(
+                    'extendLoaded', () => {
+                        shippingProtectionOffer(customerData);
+                    });
+            }
+        }
+    }
 
-                                        Magewire.find('price-summary.total-segments').refresh().then(() => {
-                                            //reload the page if the element doesn't show after a magewire refresh
-                                            if (!(document.querySelector('.item.shipping_protection'))){
-                                                window.location.reload();
-                                            }
+    function shippingProtectionOffer(customerData) {
+        'use strict';
+        const cartUtils = window.cart_utils(customerData);
 
-                                        });
-                                    },
-                                })
-                            },
-                            onDisable: function () {
-                                ExtendMagento.removeSpPlanFromOrder({
-                                    callback: function (err, _resp) {
-                                        if (err) {
-                                            return
-                                        }
+        return function () {
+            try {
+                const items = ExtendMagento.formatCartItemsForSp(
+                    cartUtils.getCartItems()
+                )
+                const totals = cartUtils.getCartData().subtotalAmount;
 
-                                        setTimeout( () => {
-                                            Magewire.find('price-summary.total-segments').refresh();
-                                        }, 500)
+                window.Extend.shippingProtection.render({
+                    selector: '#extend-shipping-protection',
+                    items,
+                    isShippingProtectionInCart: ExtendMagento.isShippingProtectionInOrder(
+                                                    window.checkoutConfig.totalsData
+                                                    ),
 
-                                    },
-                                })
-                            },
-                            onUpdate: function (quote) {
-                                ExtendMagento.updateSpPlanInOrder({
-                                    quote,
-                                    totals: window.checkoutConfig.totalsData,
-                                    callback: function (err, _resp) {
-                                        if (err) {
-                                            return
-                                        }
-                                        Magewire.find('price-summary.total-segments').refresh()
-                                    },
-                                })
+                    onEnable: function (quote) {
+                        ExtendMagento.addSpPlanToOrder({
+                            quote,
+                            totals: window.checkoutConfig.totalsData,
+                            callback: function (err, _resp) {
+                                if (err) {
+                                    return
+                                }
+
+                                Magewire.find('price-summary.total-segments').refresh().then(() => {
+                                    //reload the page if the element doesn't show after a magewire refresh
+                                    if (!(document.querySelector('.item.shipping_protection'))){
+                                        window.location.reload();
+                                    }
+
+                                });
                             },
                         })
+                    },
+                    onDisable: function () {
+                        ExtendMagento.removeSpPlanFromOrder({
+                            callback: function (err, _resp) {
+                                if (err) {
+                                    return
+                                }
+
+                                setTimeout( () => {
+                                    Magewire.find('price-summary.total-segments').refresh();
+                                }, 500)
+
+                            },
+                        })
+                    },
+                    onUpdate: function (quote) {
+                        ExtendMagento.updateSpPlanInOrder({
+                            quote,
+                            totals: window.checkoutConfig.totalsData,
+                            callback: function (err, _resp) {
+                                if (err) {
+                                    return
+                                }
+                                Magewire.find('price-summary.total-segments').refresh()
+                            },
+                        })
+                    },
+                })
 
 
-                    } catch (error) {
-                        // Swallow error to avoid impacting customer checkout experience
-                        console.error(error)
-                    }
+            } catch (error) {
+                // Swallow error to avoid impacting customer checkout experience
+                console.error(error)
+            }
 
-                }.bind(window.Extend, window.ExtendMagento)()
-            },
-        }
+        }.bind(window.Extend, window.ExtendMagento)()
     }
 </script>
 <!--
-  ~ Copyright Extend (c) 2022. All rights reserved.
-  ~ See Extend-COPYING.txt for license details.
+  ~ Copyright Extend (c) 2024. All rights reserved.
   -->
 

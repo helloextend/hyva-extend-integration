@@ -8,7 +8,6 @@
     /** @var Magento\Catalog\Block\Product\View $block */
 
     $stringUtils        = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
-    $cartUtils          = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
     $viewModel          = $block->getData('viewModel');
     $extendStoreUuid    = $viewModel->getExtendStoreUuid();
     $activeEnvironment  = $viewModel->getActiveEnvironment();
@@ -27,18 +26,13 @@
 
     <script>
 
-        (async() => {
-
-            let cart_utils = await import('<?= $cartUtils ?>');
-            cart_utils = cart_utils.default;
-
             const minicartSelector = '[data-block="minicart"]'
             const productItemSelector = '.items-start'
             const itemDetailsSelector = '.price-excluding-tax'
             const simpleOfferClass = 'extend-minicart-simple-offer'
 
+            window.minicartSimpleOffer =  function() {
 
-            window.minicartSimpleOffer = function() {
                 return {
                     customerData: {},
 
@@ -63,7 +57,7 @@
 
                         if (toggle && event.detail && !event.detail.isOpen  ) return;
 
-                        const cartUtils = cart_utils(this.customerData);
+                        const cartUtils = window.cart_utils(this.customerData);
 
                         function handleUpdate() {
                             let cartItems = cartUtils.getCartItems();
@@ -93,7 +87,7 @@
 
                                 const itemDetailsElem = itemContainerElem.querySelector(itemDetailsSelector)
 
-                                if (itemDetailsElem) {
+                                if (itemDetailsElem && !Extend.buttons.instance(simpleOfferElem)) {
                                     itemDetailsElem.append(simpleOfferElem)
                                     Extend.buttons.renderSimpleOffer(simpleOfferElem, {
                                         referenceId: cartItem.product_sku,
@@ -154,7 +148,6 @@
                     }
                 }
             }
-        })(); //async
  </script>
 
 <?php endif; ?>

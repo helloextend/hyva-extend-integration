@@ -2,16 +2,25 @@
 
     /** @var Magento\Framework\Escaper $escaper */
     /** @var Magento\Catalog\Block\Product\View $block */
-
+    $viewModel = $block->getData('viewModel');
     $extendSdk = 'https://sdk.helloextend.com/extend-sdk-client/v1/extend-sdk-client.min.js';
     $extendMagentoSdk = 'https://sdk.helloextend.com/extend-sdk-client-magento-addon/v1/extend-sdk-client-magento-addon.min.js';
     $cartUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/cart-utils.js'));
     $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
-?>
 
+    $isCurrencySupported = $viewModel->isCurrencySupported();
+    $shouldRender = $viewModel->isExtendProductProtectionEnabled()
+                    && $viewModel->isProductProtectionProductDisplayPageOfferEnabled()
+                    && $isCurrencySupported;
+
+?>
+<?php if ($shouldRender) : ?>
 <script>
     'use strict';
-    initExtendBase();
+    window.addEventListener('load', () => {
+        initExtendBase();
+    })
+
 
     function initExtendBase(){
         const jsFiles = [
@@ -19,10 +28,14 @@
             '<?= $stringUtils ?>'
         ];
 
-        const sdkFiles = [
-            '<?= $extendSdk ?>',
-            '<?= $extendMagentoSdk ?>'
-        ];
+        const sdkFiles = {
+            extend: {
+                src: '<?= $extendSdk ?>'
+            },
+            magento: {
+                src: '<?= $extendMagentoSdk ?>'
+            }
+        };
 
         jsFiles.forEach((item) => {
             let script = document.createElement('script');
@@ -31,28 +44,35 @@
             document.head.appendChild(script);
         });
 
-        sdkFiles.forEach((item, index) => {
+        for (let sdk in sdkFiles){
             let script = document.createElement('script');
-            script.src = item;
+            script.src = sdkFiles[sdk].src;
+            sdkFiles[sdk].script = script;
+        }
 
-            if (index == 0) script.addEventListener('load', () => {
-                //load sdk config
-                const config = [{
-                    extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
-                    activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
-                    currencyCode: "<?= $block->getData('viewModel')->getCurrencyCode(); ?>",
-                }]
+        sdkFiles.extend.script.addEventListener('load', () => {
+            //load sdk config
+            const config = [{
+                extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
+                activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
+                currencyCode: "<?= $block->getData('viewModel')->getCurrencyCode(); ?>",
+            }]
 
-                Extend.config({
-                    storeId: config[0].extendStoreUuid,
-                    environment: config[0].activeEnvironment,
-                    currency: config[0].currencyCode
-                })
+            Extend.config({
+                storeId: config[0].extendStoreUuid,
+                environment: config[0].activeEnvironment,
+                currency: config[0].currencyCode
             });
 
-            if (index == 1) script.addEventListener('load', () => { window.dispatchEvent(new Event('extendLoaded')); });
-            document.head.appendChild(script);
+            document.head.appendChild(sdkFiles.magento.script);
+
         });
+
+        sdkFiles.magento.script.addEventListener('load', () => { window.dispatchEvent(new Event('extendLoaded')); });
+
+        document.head.appendChild(sdkFiles.extend.script);
+
     }
 
 </script>
+<?php endif; ?>
