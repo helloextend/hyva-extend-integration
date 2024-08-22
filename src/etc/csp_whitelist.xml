@@ -19,8 +19,10 @@
             </values>
         </policy>
         <policy id="font-src">
-            <value id="gstatic" type="host">*.gstatic.com</value>
-            <value id="googleapis" type="host">*.googleapis.com</value>
+            <values>
+                <value id="gstatic" type="host">*.gstatic.com</value>
+                <value id="googleapis" type="host">*.googleapis.com</value>
+            </values>
         </policy>
         <policy id="connect-src">
             <values>
