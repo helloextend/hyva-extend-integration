@@ -28,7 +28,7 @@ window.cart_utils = (customerData) => {
                 name: magentoCartItem.product_name,
                 sku: magentoCartItem.product_sku,
                 qty: magentoCartItem.qty,
-                price: magentoCartItem.product_price_value * 100,
+                price: Math.round(magentoCartItem.product_price_value * 100),
                 item_id: magentoCartItem.product_id,
                 options: [],
             }

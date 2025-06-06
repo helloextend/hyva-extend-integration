@@ -91,7 +91,7 @@
                                     itemDetailsElem.append(simpleOfferElem)
                                     Extend.buttons.renderSimpleOffer(simpleOfferElem, {
                                         referenceId: cartItem.product_sku,
-                                        price: cartItem.product_price_value * 100,
+                                        price: Math.round(cartItem.product_price_value * 100),
                                         onAddToCart: function (opts) {
                                             addToCart(opts);
                                         },

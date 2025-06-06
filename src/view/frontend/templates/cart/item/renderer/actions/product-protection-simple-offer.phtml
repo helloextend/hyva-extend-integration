@@ -150,7 +150,7 @@
 
                     const activeProductData = {
                         referenceId: config[0].selectedProductSku,
-                        price: config[0].selectedProductPrice * 100,
+                        price: Math.round(config[0].selectedProductPrice * 100),
                         onAddToCart: handleAddToCartClick,
                     }
                     if (!Extend.buttons.instance('#product_protection_offer_' +

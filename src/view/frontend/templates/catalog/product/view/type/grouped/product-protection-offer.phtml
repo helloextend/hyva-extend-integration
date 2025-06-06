@@ -115,7 +115,7 @@
                             currentOffer,
                             {
                                 referenceId: config[key].selectedProductSku,
-                                price: config[key].selectedProductPrice * 100,
+                                price: Math.round(config[key].selectedProductPrice * 100),
                                 category: config[key].productCategory
                             },
                         )

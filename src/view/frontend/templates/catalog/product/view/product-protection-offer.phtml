@@ -138,7 +138,7 @@
                           stringUtils.sanitizeForElementId(config[key].selectedProductSku),
                           {
                               referenceId: config[key].selectedProductSku,
-                              price: config[key].selectedProductPrice * 100,
+                              price: Math.round(config[key].selectedProductPrice * 100),
                           },
                       )
                   }
@@ -170,10 +170,10 @@
                   )
                   const activeProductData = {
                       referenceId: selectedProduct.selectedProductSku,
-                      price: selectedProduct.selectedPrice * 100,
+                      price: Math.round(selectedProduct.selectedPrice * 100),
                   }
                   if (buttonInstance) {
-                      const selectedConfPrice = selectedPrice.amount*100;
+                      const selectedConfPrice = Math.round(selectedPrice.amount*100)    ;
                       config[0].selectedConfigurableProduct={selectedProductSku, selectedConfPrice }
                       buttonInstance.setActiveProduct(activeProductData)
                   } else {
@@ -252,7 +252,7 @@
                               } else {
                                   window.Extend.modal.open({
                                       referenceId: selectedProduct.selectedProductSku,
-                                      price: selectedProduct.selectedProductPrice * 100,
+                                      price: Math.round(selectedProduct.selectedProductPrice * 100),
                                       onClose: function (plan, product) {
                                           if (plan && product) {
                                               const {
