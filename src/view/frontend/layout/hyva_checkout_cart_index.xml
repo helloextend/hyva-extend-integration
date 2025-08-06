@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright Extend (c) 2025. All rights reserved.
+  ~ See Extend-COPYING.txt for license details.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="checkout.cart.totals.container">
+            <block name="extend.checkout.cart.totals.shipping.protection"
+                   template="Extend_HyvaIntegration::checkout/cart/totals/shipping-protection.phtml"
+                   ifconfig="extend_plans/shipping_protection/enable">
+            </block>
+        </referenceContainer>
+    </body>
+</page>
