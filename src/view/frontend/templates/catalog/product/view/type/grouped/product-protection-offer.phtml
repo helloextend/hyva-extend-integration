@@ -89,9 +89,9 @@
                 'use strict';
                 const cartUtils = window.cart_utils(customerData);
 
-                const getProductQuantity = function () {
+                const getProductQuantity = function (productOffer) {
                     let quantity = 1
-                    const quantityInput = document.querySelector('.input-text.qty')
+                    const quantityInput = document.querySelector('#super_group\\['+productOffer+'\\]');
                     if (quantityInput) quantity = parseInt(quantityInput.value)
                     return quantity
                 }
@@ -152,12 +152,13 @@
                                     const cartItems = cartUtils
                                         .getCartItems()
                                         .map(cartUtils.mapToExtendCartItem)
-                                    const quantity = getProductQuantity()
+
+                                    const quantity = getProductQuantity(productOffer)
 
                                     const selectedPlan = buttonInstance.getPlanSelection()
 
                                     // If a plan is selected, add it to the cart
-                                    if (selectedPlan) {
+                                    if (selectedPlan && quantity > 0) {
                                         const {planId, price, term, title, coverageType, offerId} = selectedPlan;
                                         const {
                                             selectedProductSku: productId,
