@@ -92,7 +92,11 @@
                 const getProductQuantity = function (productOffer) {
                     let quantity = 1
                     const quantityInput = document.querySelector('#super_group\\['+productOffer+'\\]');
-                    if (quantityInput) quantity = parseInt(quantityInput.value)
+                    if (quantityInput) {
+                        quantity = parseInt(quantityInput.value)
+                    }else {
+                        return null
+                    }
                     return quantity
                 }
 
@@ -158,29 +162,31 @@
                                     const selectedPlan = buttonInstance.getPlanSelection()
 
                                     // If a plan is selected, add it to the cart
-                                    if (selectedPlan && quantity > 0) {
-                                        const {planId, price, term, title, coverageType, offerId} = selectedPlan;
-                                        const {
-                                            selectedProductSku: productId,
-                                            selectedPrice: listPrice,
-                                        } = selectedProduct
+                                    if (quantity){
+                                        if (selectedPlan && quantity >0) {
+                                            const {planId, price, term, title, coverageType, offerId} = selectedPlan;
+                                            const {
+                                                selectedProductSku: productId,
+                                                selectedPrice: listPrice,
+                                            } = selectedProduct
 
-                                        const planToUpsert = {
-                                            planId,
-                                            price,
-                                            term,
-                                            title,
-                                            coverageType,
+                                            const planToUpsert = {
+                                                planId,
+                                                price,
+                                                term,
+                                                title,
+                                                coverageType,
+                                            }
+
+                                            await ExtendMagento.upsertProductProtection({
+                                                plan: planToUpsert,
+                                                cartItems,
+                                                productId,
+                                                listPrice,
+                                                offerId,
+                                                quantity,
+                                            })
                                         }
-
-                                        await ExtendMagento.upsertProductProtection({
-                                            plan: planToUpsert,
-                                            cartItems,
-                                            productId,
-                                            listPrice,
-                                            offerId,
-                                            quantity,
-                                        })
                                     }
                             }
                             index++;
