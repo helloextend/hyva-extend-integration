@@ -1,5 +1,5 @@
 <?php
-/** Hyva compatibility module - Product protection simple offer */
+/** Hyva compatibility module - Product protection simple offer  */
 
     /** @var Magento\Framework\Escaper $escaper */
     /** @var Magento\Catalog\Block\Product\View $block */
@@ -50,13 +50,15 @@
 </div>
 
     <script>
-           window.addEventListener(
-               'private-content-loaded', (event) => {
-                  initProductWarrantyOffers(event);
+    window.addEventListener(
+		   'private-content-loaded', (event) => {
+		   if (!window.extendLoaded){
+			   initProductWarrantyOffers(event);
+			   window.extendLoaded = true;
+		   }
                });
 
            async function initProductWarrantyOffers(event) {
-
                 const config = [{
                     extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
                     activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
@@ -65,8 +67,7 @@
                     productCategory: "<?= $categoryName; ?>",
                     currencyCode: "<?= $currencyCode ?>",
                     selectedConfigurableProduct: {}
-                }]
-
+	   }]
                 const customerData = event.detail.data;
 
                 let stringUtils = await import('<?= $stringUtils ?>');
@@ -133,48 +134,50 @@
                     }
                 }
 
-                function renderSimpleOffer(cartItems, config) {
-                    const sku = config[0].selectedProductSku
-                    const isWarrantyInCart = ExtendMagento.warrantyInCart({
-                        lineItemSku: sku,
-                        lineItems: cartItems,
-                    })
+		function renderSimpleOffer(cartItems, config) {
+                    const sku = cartItems.product_sku
 
-                    if (
-                        sku === 'extend-protection-plan' ||
-                        sku === 'xtd-pp-pln' ||
-                        isWarrantyInCart
-                    ) {
-                        return
+		 
+		    if (cartItems && cartItems.length > 0) { 
+			     
+			cartItems.forEach(cartItem => {
+                    		let isWarrantyInCart = ExtendMagento.warrantyInCart({
+                        	lineItemSku: cartItem.product_sku,
+                        	lineItems: cartItems,
+		                })
+			
+		    		if (
+                        		cartItem.product_sku === 'extend-protection-plan' ||
+                        		cartItem.product_sku === 'xtd-pp-pln' ||
+                        		isWarrantyInCart
+		    		) {
+                        		return
+				}
+
+
+                    		const activeProductData = {
+                        		referenceId: cartItem.product_sku,
+                        		price: Math.round(cartItem.product_price_value * 100),
+                        		onAddToCart: handleAddToCartClick,
+		     		}
+                    		if (!Extend.buttons.instance('#product_protection_offer_' +
+                        	stringUtils.sanitizeForElementId(cartItem.product_sku))){
+                        		window.Extend.buttons.renderSimpleOffer(
+                            		'#product_protection_offer_' +
+                            		stringUtils.sanitizeForElementId(cartItem.product_sku),
+                        	    	activeProductData,
+					)
+		    		}
+			})
                     }
 
-                    const activeProductData = {
-                        referenceId: config[0].selectedProductSku,
-                        price: Math.round(config[0].selectedProductPrice * 100),
-                        onAddToCart: handleAddToCartClick,
-                    }
-                    if (!Extend.buttons.instance('#product_protection_offer_' +
-                        stringUtils.sanitizeForElementId(config[0].selectedProductSku))){
-                        window.Extend.buttons.renderSimpleOffer(
-                            '#product_protection_offer_' +
-                            stringUtils.sanitizeForElementId(config[0].selectedProductSku),
-                            activeProductData,
-                        )
-                    }
+		}
+		const cartData  = cartUtils.getCartData()
+		const cartItems = cartData.items || cartUtils.getCartItems()
 
-                }
+		renderSimpleOffer(cartItems, config);
+		return 
 
-                return function() {
-                    const cartData  = cartUtils.getCartData()
-                    let cartItems = cartUtils.getCartItems()
-
-                    if (cartItems.length > 0) {
-                        renderSimpleOffer(cartItems, config)
-                    }
-
-                    cartItems = cartData.items
-                    renderSimpleOffer(cartItems, config)
-                }.bind(window.Extend, window.ExtendMagento)();
            }
     </script>
 
