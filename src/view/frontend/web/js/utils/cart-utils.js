@@ -19,9 +19,9 @@ window.cart_utils = (customerData) => {
         getCartData: function () {
             return customerData.cart;
         },
-        refreshMiniCart: function () {
-            hyva.setCookie('mage-cache-sessid', '', -1, true); // remove the cookie
-            window.dispatchEvent(new CustomEvent("reload-customer-section-data")); // reload the data
+        refreshMiniCart: async function () {
+            await hyva.setCookie('mage-cache-sessid', '', -1, true); // remove the cookie
+            await window.dispatchEvent(new CustomEvent("reload-customer-section-data")); // reload the data
         },
         mapToExtendCartItem: function (magentoCartItem) {
             return {
