@@ -50,13 +50,19 @@
 </div>
 
     <script>
+   if (!window.__hyvaExtendOffersInit){
     window.addEventListener(
-		   'private-content-loaded', (event) => {
-		   if (!window.extendLoaded){
-			   initProductWarrantyOffers(event);
-			   window.extendLoaded = true;
-		   }
-               });
+		   'private-content-loaded', async (event) => {
+    			try {
+        			await initProductWarrantyOffers(event);
+        			window.__hyvaExtendOffersInit = true;
+    			} catch (error) {
+        			console.error('Failed to initialize product warranty offers:', error);
+    			}
+
+   		});
+   }
+               
 
            async function initProductWarrantyOffers(event) {
                 const config = [{
@@ -127,16 +133,15 @@
                             listPrice,
                             offerId,
                             quantity: quantity ?? getProductQuantity(cartItems, product),
-                        }).then(function () {
-                            cartUtils.refreshMiniCart()
-                            window.location.reload()
+			}).then( async function () {
+				await cartUtils.refreshMiniCart();
+			 	window.location.reload();
                         })
                     }
                 }
 
 		function renderSimpleOffer(cartItems, config) {
                     const sku = cartItems.product_sku
-
 		 
 		    if (cartItems && cartItems.length > 0) { 
 			     
