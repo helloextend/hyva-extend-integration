@@ -1,0 +1,15 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\CustomerData\AbstractItem">
+        <plugin name="extend_add_category_to_cart_item"
+                type="Extend\HyvaIntegration\Plugin\Checkout\CustomerData\AddCategoryToCartItem"
+                sortOrder="10"/>
+    </type>
+
+    <type name="Magento\ConfigurableProduct\Block\Product\View\Type\Configurable">
+    	<plugin name="extend_inject_category_into_json_config"
+            type="Extend\HyvaIntegration\Plugin\ConfigurableProduct\Block\Product\View\Type\InjectCategoryIntoJsonConfig"
+            sortOrder="10"/>
+    </type>
+
+</config>

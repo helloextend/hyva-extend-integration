@@ -65,7 +65,7 @@
                         function handleUpdate() {
                             let cartItems = cartUtils.getCartItems();
                             for (let item in cartItems) {
-                                const cartItem = cartItems[item];
+				const cartItem = cartItems[item];
                                 const itemContainerElem = document.querySelectorAll(productItemSelector)[item]
                                 const isWarrantyInCart = ExtendMagento.warrantyInCart({
                                     lineItemSku: cartItem.product_sku,
@@ -79,7 +79,7 @@
                                 }
                                 if (cartItem.product_sku === 'extend-protection-plan'
                                     || cartItem.product_sku === 'xtd-pp-pln'
-                                    || isWarrantyInCart) {
+				    || isWarrantyInCart || cartItem.product_type == 'bundle') {
                                     continue;
                                 }
 
@@ -94,7 +94,8 @@
                                     itemDetailsElem.append(simpleOfferElem)
                                     Extend.buttons.renderSimpleOffer(simpleOfferElem, {
                                         referenceId: cartItem.product_sku,
-                                        price: Math.round(cartItem.product_price_value * 100),
+						price: Math.round(cartItem.product_price_value * 100),
+						category: cartItem.category,
                                         onAddToCart: function (opts) {
                                             addToCart(opts);
                                         },
