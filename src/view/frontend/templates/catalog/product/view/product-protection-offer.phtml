@@ -14,17 +14,16 @@
     use \Magento\Catalog\Block\Product\View;
     /** @var View $block */
 
-
     $categoryName = '';
 
-    if ($category = $block->getProduct()->getCategory()) {
-        $categoryName = $category->getName();
-    }
-
     $viewModel = $block->getData('viewModel');
-
     $product = $block->getProduct();
     $productSku = $product->getSku();
+
+    if ($category = $product->getCategory()) {
+            $categoryName = $category->getName();
+    }
+
 
     /** sanitizing to prevent whitespace and other abnormal characters from being used in a div id */
     $sanitizedProductSku = preg_replace('/[^a-zA-Z0-9_|]/', '',  $productSku);
@@ -44,7 +43,6 @@
 
   <script type="module">
      import stringUtils from '<?= $stringUtils ?>'
-
      window.addEventListener(
          'private-content-loaded', (event) => {
              initProductWarrantyOffers(event);
@@ -56,7 +54,8 @@
              activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
              selectedProductSku: "<?= $block->getProduct()->getSku(); ?>",
              selectedProductPrice: "<?= $block->getProduct()->getPrice(); ?>",
-             productCategory: "<?= $categoryName; ?>",
+	     productCategory: "<?= $categoryName; ?>",
+		category: "<?= $categoryName; ?>",
              currencyCode: "<?= $currencyCode ?>",
              selectedConfigurableProduct: {}
          }]
@@ -67,7 +66,7 @@
              productProtectionOffer(config, customerData);
          }else{
              window.addEventListener(
-                 'extendLoaded', () => {
+		     'extendLoaded', () => {
                      productProtectionOffer(config, customerData);
                  });
          }
@@ -75,7 +74,7 @@
 
 
      function productProtectionOffer(config, customerData) {
-          'use strict';
+	     'use strict';
          const cartUtils = window.cart_utils(customerData);
 
           const getProductQuantity = function () {
@@ -125,12 +124,12 @@
                       selectedProductSku =
                           spConfig && spConfig.skus ? spConfig.skus[selectedId] : null
                   }
-              }
+	      }
               return {selectedProductSku, selectedPrice}
           }
 
            return function() {
-              for (let key in config) {
+	  	for (let key in config) {
                   if (!Extend.buttons.instance('#product_protection_offer_' +
                       stringUtils.sanitizeForElementId(config[key].selectedProductSku))){
                       Extend.buttons.render(
@@ -138,7 +137,9 @@
                           stringUtils.sanitizeForElementId(config[key].selectedProductSku),
                           {
                               referenceId: config[key].selectedProductSku,
-                              price: Math.round(config[key].selectedProductPrice * 100),
+                              price:  parseInt(
+                                  (config[key].selectedProductPrice * 100).toPrecision(10)),
+                              category: config[key].productCategory
                           },
                       )
                   }
@@ -153,16 +154,21 @@
 
                   let selectedPrice =  <?= $product->getFinalPrice(); ?>;
                   let selectedProductSku = '<?= $product->getSku(); ?>';
+                  let selectedCategory = '';
 
                   const optionsConfig = document.querySelector('div[x-data="initConfigurableSwatchOptions_' + eventdetail.productId + '()"]')._x_dataStack[0].optionConfig;
                   const productIndex = document.querySelector('div[x-data="initConfigurableSwatchOptions_' + eventdetail.productId + '()"]')._x_dataStack[0].productIndex;
+		  
+		  const selectedId = event.detail.selectedProductId;
+		  const categoryData = optionsConfig.categoryMap?.[selectedId];
+
 
                   if (productIndex && productIndex !== 0 ){
-                      selectedPrice =  optionsConfig.optionPrices[productIndex].finalPrice;
-                      selectedProductSku = optionsConfig.sku[productIndex];
+                      selectedPrice =  optionsConfig.optionPrices[productIndex].finalPrice.amount;
+		      selectedProductSku = optionsConfig.sku[productIndex];
+		      selectedCategory = optionsConfig.categoryMap[productIndex].category;
                   }
-
-                  const selectedProduct = { selectedProductSku, selectedPrice };
+                  const selectedProduct = { selectedProductSku, selectedPrice, selectedCategory };
 
                   const buttonInstance = Extend.buttons.instance(
                       '#product_protection_offer_' +
@@ -170,10 +176,11 @@
                   )
                   const activeProductData = {
                       referenceId: selectedProduct.selectedProductSku,
-                      price: Math.round(selectedProduct.selectedPrice * 100),
-                  }
+                      price: parseInt((selectedProduct.selectedPrice * 100).toPrecision(10)),
+		      category: selectedProduct.selectedCategory
+		  }
                   if (buttonInstance) {
-                      const selectedConfPrice = Math.round(selectedPrice.amount*100)    ;
+                      const selectedConfPrice = parseInt((selectedPrice.amount*100).toPrecision(10)); 
                       config[0].selectedConfigurableProduct={selectedProductSku, selectedConfPrice }
                       buttonInstance.setActiveProduct(activeProductData)
                   } else {
@@ -249,11 +256,13 @@
                                                 }
                                             )
                                   // If no plan is selected, open the offer modal
-                              } else {
-                                  window.Extend.modal.open({
+			      } else {
+                           window.Extend.modal.open({
                                       referenceId: selectedProduct.selectedProductSku,
-                                      price: Math.round(selectedProduct.selectedProductPrice * 100),
-                                      onClose: function (plan, product) {
+                                      price: parseInt((selectedProduct.selectedProductPrice * 100).toPrecision(10)),
+				      category: selectedProduct.productCategory,
+				      //category: selectedProduct.selectedCategory,
+				      onClose: function (plan, product) {
                                           if (plan && product) {
                                               const {
                                                   planId,

@@ -134,8 +134,8 @@
                             offerId,
                             quantity: quantity ?? getProductQuantity(cartItems, product),
 			}).then( async function () {
-				await cartUtils.refreshMiniCart();
-			 	window.location.reload();
+				 await cartUtils.refreshMiniCart()
+				    window.location.reload()
                         })
                     }
                 }
@@ -144,7 +144,6 @@
                     const sku = cartItems.product_sku
 		 
 		    if (cartItems && cartItems.length > 0) { 
-			     
 			cartItems.forEach(cartItem => {
                     		let isWarrantyInCart = ExtendMagento.warrantyInCart({
                         	lineItemSku: cartItem.product_sku,
@@ -162,7 +161,8 @@
 
                     		const activeProductData = {
                         		referenceId: cartItem.product_sku,
-                        		price: Math.round(cartItem.product_price_value * 100),
+					price: Math.round(cartItem.product_price_value * 100),
+					category: cartItem.category,
                         		onAddToCart: handleAddToCartClick,
 		     		}
                     		if (!Extend.buttons.instance('#product_protection_offer_' +

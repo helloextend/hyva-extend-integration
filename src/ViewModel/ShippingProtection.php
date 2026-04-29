@@ -46,7 +46,6 @@ class ShippingProtection implements
     /** @var Http */
     private $request;
 
-    //JM
     /** @var CartInterface */
     private $cart;
 
@@ -71,7 +70,6 @@ class ShippingProtection implements
      * @param ActiveEnvironmentURLBuilder $activeEnvironmentURLBuilder
      * @param LoggerInterface $logger
      * @param Http $request
-     * //JM
      * @param CartInterface $cart
      * @param CartRepositoryInterface $cartRepository
      * @param QuoteFactory $quote
@@ -85,7 +83,6 @@ class ShippingProtection implements
         ActiveEnvironmentURLBuilder $activeEnvironmentURLBuilder,
         LoggerInterface $logger,
         Http $request,
-        //JM
         CartInterface $cart,
         CartRepositoryInterface $cartRepository,
         QuoteFactory $quote,
@@ -98,7 +95,6 @@ class ShippingProtection implements
         $this->activeEnvironmentURLBuilder = $activeEnvironmentURLBuilder;
         $this->logger = $logger;
         $this->request = $request;
-        //JM
         $this->cart = $cart;
         $this->cartRepository = $cartRepository;
         $this->quote = $quote;
