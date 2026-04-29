@@ -24,8 +24,19 @@ class AddCategoryToCartItem
 
             $categoryNames = [];
             foreach ($categoryIds as $categoryId) {
-                $category = $this->categoryRepository->get($categoryId, $storeId);
-                $categoryNames[] = $category->getName();
+                try {
+                   $category = $this->categoryRepository->get($categoryId, $storeId);
+                    $categoryNames[] = $category->getName();
+                } catch (\Throwable $e) {
+                    $this->logger->warning(
+                       sprintf(
+                            'CartCategory lookup failed (itemId=%s, categoryId=%s): %s',
+                            (string)$item->getItemId(),
+                            (string)$categoryId,
+                            $e->getMessage()
+                        )
+                    );
+                }
             }
 
             $result['category_ids']   = $categoryIds;
