@@ -22,6 +22,11 @@
 	$categoryName = $viewModelHyva->getCategoryName();
 
 
+    if ($category = $product->getCategory()) {
+            $categoryName = $category->getName();
+    }
+
+
     /** sanitizing to prevent whitespace and other abnormal characters from being used in a div id */
     $sanitizedProductSku = preg_replace('/[^a-zA-Z0-9_|]/', '',  $productSku);
 
