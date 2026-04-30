@@ -15,6 +15,7 @@
     }
 
     $viewModel = $block->getData('viewModel');
+    //$viewModelHyva = $block->getData('viewModelHyva');
     $currencyCode = $viewModel->getCurrencyCode();
     $isCurrencySupported = $viewModel->isCurrencySupported();
     $shouldRender = $viewModel->isExtendProductProtectionEnabled()

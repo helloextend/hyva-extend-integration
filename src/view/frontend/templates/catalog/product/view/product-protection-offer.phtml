@@ -6,23 +6,20 @@
     /** @var Magento\Framework\Escaper $escaper */
     /** @var Magento\Catalog\Block\Product\View $block */
 
-    $viewModel = $block->getData('viewModel');
-    $stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
+	$viewModel = $block->getData('viewModel');
+	$viewModelHyva = $block->getData('viewModelHyva');
+    	$stringUtils = $escaper->escapeJs($block->getViewFileUrl('Extend_HyvaIntegration::js/utils/string-utils.js'));
 ?>
 
 <?php
     use \Magento\Catalog\Block\Product\View;
     /** @var View $block */
 
-    $categoryName = '';
-
-    $viewModel = $block->getData('viewModel');
-    $product = $block->getProduct();
-    $productSku = $product->getSku();
-
-    if ($category = $product->getCategory()) {
-            $categoryName = $category->getName();
-    }
+    	$categoryName = '';
+	$product = $viewModelHyva->getCurrentProduct();
+	$productSku = $escaper->escapeHtmlAttr($viewModelHyva->getProductSku());
+	$sanitizedProductSku = preg_replace('/[^a-zA-Z0-9_]/', '', $productSku);
+	$categoryName = $viewModelHyva->getCategoryName();
 
 
     /** sanitizing to prevent whitespace and other abnormal characters from being used in a div id */
@@ -33,6 +30,9 @@
     $shouldRender = $viewModel->isExtendProductProtectionEnabled()
                     && $viewModel->isProductProtectionProductDisplayPageOfferEnabled()
                     && $isCurrencySupported;
+
+
+
 
 ?>
 
@@ -48,7 +48,7 @@
              initProductWarrantyOffers(event);
          }, { once:true });
 
-     async function initProductWarrantyOffers(event) {
+    async function initProductWarrantyOffers(event) {
          const config = [{
              extendStoreUuid: "<?= $block->getData('viewModel')->getExtendStoreUuid() ?>",
              activeEnvironment: "<?= $block->getData('viewModel')->getActiveEnvironment() ?>",
@@ -76,7 +76,6 @@
      function productProtectionOffer(config, customerData) {
 	     'use strict';
          const cartUtils = window.cart_utils(customerData);
-
           const getProductQuantity = function () {
               let quantity = 1
               const quantityInput = document.querySelector('.input-text.qty')
@@ -257,7 +256,7 @@
                                             )
                                   // If no plan is selected, open the offer modal
 			      } else {
-                           window.Extend.modal.open({
+                                  window.Extend.modal.open({
                                       referenceId: selectedProduct.selectedProductSku,
                                       price: parseInt((selectedProduct.selectedProductPrice * 100).toPrecision(10)),
 				      category: selectedProduct.productCategory,
